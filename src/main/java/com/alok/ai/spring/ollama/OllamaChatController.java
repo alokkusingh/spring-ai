@@ -22,6 +22,10 @@ public class OllamaChatController {
             .withContent("You are geography teacher. You are talking to a student.")
             .build();
 
+    private final OllamaApi.Message historyTeacherRoleContextMessage = OllamaApi.Message.builder(OllamaApi.Message.Role.ASSISTANT)
+            .withContent("You are history teacher. You are talking to a student.")
+            .build();
+
     @Autowired
     public OllamaChatController(OllamaApi ollamaApi, @Value("${spring.ai.ollama.chat.model}") String model) {
         this.ollamaApi = ollamaApi;
@@ -39,6 +43,23 @@ public class OllamaChatController {
                         OllamaApi.Message.builder(OllamaApi.Message.Role.USER)
                                 .withContent(message.question())
                                 .build()
+                        )
+                )
+                .withOptions(OllamaOptions.create().withTemperature(0.9f))
+                .build()).message());
+    }
+
+    @PostMapping(value = "/teacher/history")
+    public ResponseEntity<OllamaApi.Message> chatWithHistoryTeacher(
+            @RequestBody Message message
+    ) {
+        return ResponseEntity.ok(ollamaApi.chat(OllamaApi.ChatRequest.builder(model)
+                .withStream(false) // not streaming
+                .withMessages(List.of(
+                                historyTeacherRoleContextMessage,
+                                OllamaApi.Message.builder(OllamaApi.Message.Role.USER)
+                                        .withContent(message.question())
+                                        .build()
                         )
                 )
                 .withOptions(OllamaOptions.create().withTemperature(0.9f))
